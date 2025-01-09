@@ -44,7 +44,23 @@
             @change="handleFileChange(selectedFile)"
             class="file-input"
         ></v-file-input>
-        <v-btn @click="handleButtonClick" style="background-color: #4ba42e; color: #fff" class="upload-button">开始分割</v-btn>
+        <v-btn @click="handleButtonClick" style="background-color: #4ba42e; color: #fff" class="upload-button">
+          开始分割
+        </v-btn>
+        <v-overlay
+            :model-value="overlay"
+            class="align-center justify-center"
+            persistent
+        >
+          <div class="overlay-content">
+            <v-progress-circular
+                color="primary"
+                size="64"
+                indeterminate
+            ></v-progress-circular>
+            <p>处理中，请稍候...</p>
+          </div>
+        </v-overlay>
       </div>
     </div>
 
@@ -74,6 +90,7 @@ import {ref, computed, onMounted, onUnmounted} from "vue"
 import {useRouter} from "vue-router";
 import axios from "axios";
 
+const overlay = ref(false)
 const utilStore = useUtilStore()
 const router = useRouter()
 if (utilStore.id <= 0) {
@@ -91,7 +108,6 @@ onUnmounted(() => {
 const fullUserName = computed(() => {
   return utilStore.username + '#' + utilStore.id
 })
-
 
 const items = [
   {title: "注销登录"}
@@ -114,12 +130,23 @@ const fileHandle = async (file: File) => {
           'Content-Type': 'multipart/form-data',
         }
       })
-      if (response.data.isSuccessful) {
-        alert('处理成功')
+      let response_data = response.data
+      if (response_data.isSuccessful) {
+        let {source_image_url, segmented_image_url, message} = response_data
+        console.log('@@@@@@@@@@@@@@@@@@@@')
+        console.log(source_image_url)
+        console.log(segmented_image_url)
+        console.log(message)
+        console.log('@@@@@@@@@@@@@@@@@@@@')
+        overlay.value = false // 处理流程已经结束
       } else {
+        let {message} = response_data
+        console.log(message)
+        overlay.value = false // 处理流程已经结束
         alert('处理失败')
       }
     } catch (e) {
+      overlay.value = false // 处理流程已经结束
       alert('上传失败')
       console.error('upload fail: ', e)
     }
@@ -161,7 +188,8 @@ const handleLogout = async (title: string) => {
 }
 
 const handleButtonClick = async () => {
-  if(selectedFile.value != null) {
+  if (selectedFile.value != null) {
+    overlay.value = true
     await fileHandle(selectedFile.value)
   } else {
     alert('您还没有上传图片')
@@ -296,5 +324,12 @@ const handleButtonClick = async () => {
 
 .description-item p {
   font-size: 16px;
+}
+
+.overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 </style>
