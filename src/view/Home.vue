@@ -3,8 +3,8 @@
     <div class="left">
       <img src="../assets/login.svg" alt="Logo">
       <a href="#">SwinTransformer</a>
-      <a href="#">最近一次结果</a>
-      <a href="#">历史结果</a>
+      <router-link :to="{name: 'detail'}">最近一次结果</router-link>
+      <router-link :to="{name: 'detail'}">历史结果</router-link>
     </div>
     <div class="right">
       <div class="user-info">
@@ -133,12 +133,14 @@ const fileHandle = async (file: File) => {
       let response_data = response.data
       if (response_data.isSuccessful) {
         let {source_image_url, segmented_image_url, message} = response_data
-        console.log('@@@@@@@@@@@@@@@@@@@@')
-        console.log(source_image_url)
-        console.log(segmented_image_url)
-        console.log(message)
-        console.log('@@@@@@@@@@@@@@@@@@@@')
         overlay.value = false // 处理流程已经结束
+        //TODO 将已经获得的信息传递到详情展示界面
+        utilStore.segmented_image_url = segmented_image_url
+        utilStore.original_image_url = source_image_url
+        console.log(message)
+        await router.push({
+          name: 'detail'
+        })
       } else {
         let {message} = response_data
         console.log(message)
@@ -331,5 +333,10 @@ const handleButtonClick = async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.overlay-content p {
+  font-family: "JetBrains Mono ExtraBold", sans-serif;
+  font-size: 20px;
 }
 </style>

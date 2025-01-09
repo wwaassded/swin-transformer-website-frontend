@@ -23,7 +23,9 @@ const useUtilStore = defineStore('util', {
     state() {
         return {
             id: -1,
-            username: ''
+            username: '',
+            original_image_url: '',
+            segmented_image_url: '',
         }
     }
     ,
