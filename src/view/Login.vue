@@ -91,7 +91,6 @@ const handleSubmit = async () => {
       await router.replace({
         name: 'home',
       })
-      alert('登陆成功')
     }
   } catch (error) {
     alert('登陆失败了')

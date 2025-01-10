@@ -132,9 +132,9 @@ const fileHandle = async (file: File) => {
       })
       let response_data = response.data
       if (response_data.isSuccessful) {
-        let {source_image_url, segmented_image_url, message} = response_data
+        let {source_image_id, source_image_url, segmented_image_url, message} = response_data
         overlay.value = false // 处理流程已经结束
-        //TODO 将已经获得的信息传递到详情展示界面
+        utilStore.original_image_id = source_image_id
         utilStore.segmented_image_url = segmented_image_url
         utilStore.original_image_url = source_image_url
         console.log(message)

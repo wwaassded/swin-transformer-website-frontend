@@ -1,87 +1,138 @@
 <template>
-  <div>
-    <div class="navbar">
-      <div class="left">
-        <img src="../assets/login.svg" alt="Logo">
-        <a href="#">SwinTransformer</a>
-        <router-link :to="{name: 'detail'}">最近一次结果</router-link>
-        <router-link :to="{name: 'detail'}">历史结果</router-link>
-      </div>
-      <div class="right">
-        <div class="user-info">
-          <v-menu open-on-hover>
-            <template v-slot:activator="{ props }">
-              <v-btn v-bind="props" variant="text">
-                {{ fullUserName }}
-              </v-btn>
-            </template>
-          </v-menu>
-        </div>
-      </div>
-    </div>
+  <!--  如果有详细信息的话就会展示-->
+  <div v-if="utilStore && utilStore.original_image_url && utilStore.segmented_image_url">
+    <v-layout class="rounded rounded-md">
+      <v-app-bar title="SwinTransformer" class="opacity-90">
+        <v-toolbar-items>
+          <v-btn variant="plain" :ripple="false" @click="router.replace({ name: 'detail' })">最近一次结果</v-btn>
+          <v-btn variant="plain" :ripple="false" @click="router.replace({ name: 'detail' })">历史结果</v-btn>
+        </v-toolbar-items>
+        <v-divider class="mx-4" vertical></v-divider>
+        <v-btn :ripple="false" variant="plain">
+          <img src="../assets/login.svg" alt="login" class="img">
+        </v-btn>
+      </v-app-bar>
 
-    <div class="have_image d-flex justify-center align-center">
-      <v-sheet
-          class="d-flex align-center justify-center flex-wrap text-center mx-auto px-4"
-          elevation="4"
-          height="500"
-          max-width="850"
-          width="100%"
-          rounded
+      <v-navigation-drawer style="background: #fbfbfb">
+        <v-list>
+          <v-list-item>
+            <v-btn
+                :disabled="load_loading"
+                :loading="load_loading"
+                class="text-none mb-4"
+                color="indigo-darken-2"
+                size="x-large"
+                variant="outlined"
+                block
+                @click="handleDownloadImage"
+            >
+              下载分割后的图片
+            </v-btn>
+
+            <v-btn
+                :disabled="load_loading"
+                :loading="load_loading"
+                class="text-none mb-4"
+                color="teal-lighten-3"
+                size="x-large"
+                variant="outlined"
+                block
+                @click="handleDeleteImage"
+            >
+              删除这条记录
+            </v-btn>
+          </v-list-item>
+        </v-list>
+      </v-navigation-drawer>
+
+      <v-main
+          class="d-flex align-center justify-center"
+          style="min-height: 300px;background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);"
       >
-        <div>
-          <div class="d-flex align-center justify-center" style="margin-bottom: 30px">
-            <div class="img_with_description mx-2">
-              <div class="d-flex justify-center mb-2">
-                <span class="image_detail text-orange">上传的原图片</span>
+        <div class="have_image d-flex justify-center align-center">
+          <v-sheet
+              class="d-flex align-center justify-center flex-wrap text-center mx-auto px-4"
+              elevation="10"
+              height="500"
+              max-width="850"
+              width="100%"
+              rounded
+              style="background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);"
+          >
+            <div>
+              <div class="d-flex align-center justify-center" style="margin-bottom: 30px">
+                <div class="img_with_description mx-2">
+                  <div class="d-flex justify-center mb-2">
+                    <span class="image_detail">上传的原图片</span>
+                  </div>
+                  <div class="img_source">
+                    <v-img
+                        :width="300"
+                        cover
+                        :src="utilStore.original_image_url"
+                    ></v-img>
+                  </div>
+                </div>
+                <div class="mx-4 svg-container">
+                  <svg class="svg-icon" viewBox="0 0 20 20">
+                    <path fill="none"
+                          d="M14.989,9.491L6.071,0.537C5.78,0.246,5.308,0.244,5.017,0.535c-0.294,0.29-0.294,0.763-0.003,1.054l8.394,8.428L5.014,18.41c-0.291,0.291-0.291,0.763,0,1.054c0.146,0.146,0.335,0.218,0.527,0.218c0.19,0,0.382-0.073,0.527-0.218l8.918-8.919C15.277,10.254,15.277,9.784,14.989,9.491z"></path>
+                  </svg>
+                </div>
+                <div class="img_with_description mx-2">
+                  <div class="d-flex justify-center mb-2">
+                    <span class="image_detail">分割后的图片</span>
+                  </div>
+                  <div class="img_segmented">
+                    <v-img
+                        :width="300"
+                        cover
+                        :src="utilStore.segmented_image_url"
+                    ></v-img>
+                  </div>
+                </div>
               </div>
-              <div class="img_source">
-                <v-img
-                    :width="300"
-                    aspect-ratio="16/9"
-                    cover
-                    src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"
-                ></v-img>
-              </div>
+              <v-btn color="black" variant="outlined" style="margin-top: 10px" @click="router.back()">上传图片去😁
+              </v-btn>
             </div>
-            <div class="mx-4 svg-container">
-              <svg class="svg-icon" viewBox="0 0 20 20">
-                <path fill="none" d="M14.989,9.491L6.071,0.537C5.78,0.246,5.308,0.244,5.017,0.535c-0.294,0.29-0.294,0.763-0.003,1.054l8.394,8.428L5.014,18.41c-0.291,0.291-0.291,0.763,0,1.054c0.146,0.146,0.335,0.218,0.527,0.218c0.19,0,0.382-0.073,0.527-0.218l8.918-8.919C15.277,10.254,15.277,9.784,14.989,9.491z"></path>
-              </svg>
-            </div>
-            <div class="img_with_description mx-2">
-              <div class="d-flex justify-center mb-2">
-                <span class="image_detail text-orange">分割后的图片</span>
-              </div>
-              <div class="img_segmented">
-                <v-img
-                    :width="300"
-                    aspect-ratio="16/9"
-                    cover
-                    src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"
-                ></v-img>
-              </div>
-            </div>
-          </div>
-          <v-btn color="orange" variant="outlined" style="margin-top: 10px" @click="router.back()">上传图片去😁</v-btn>
+          </v-sheet>
         </div>
-      </v-sheet>
-    </div>
+      </v-main>
+    </v-layout>
+  </div>
+
+  <!--  如果没有可以显示的信息就基于用户一定的提示-->
+  <div v-else class="do_not_have_image">
+    <v-sheet
+        class="d-flex align-center justify-center flex-wrap text-center mx-auto px-4"
+        elevation="8"
+        height="300"
+        max-width="900"
+        width="100%"
+        rounded
+    >
+      <div>
+        <h2 class="text-h3 font-weight-black text-orange">Sorry!😫您最近还没有上传图片呢</h2>
+
+        <div class="text-h6 font-weight-medium mb-2" style="margin-top: 20px">
+          这里只会展示近期的分割情况，如果想要显示所有的结果可以点击主页面的历史结果按钮查看
+        </div>
+        <v-btn color="orange" variant="outlined" style="margin-top: 20px" @click="router.back()">上传图片去😎</v-btn>
+      </div>
+    </v-sheet>
   </div>
 </template>
 
 <script setup lang="ts" name="Detail">
 
 import useUtilStore from "../store/util.ts";
-import {computed, onMounted, onUnmounted} from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import {useRouter} from "vue-router";
+import axios from "axios";
 
 const utilStore = useUtilStore()
 const router = useRouter()
-
-const fullUserName = computed(() => {
-  return utilStore.username + '#' + utilStore.id
-})
+let load_loading = ref(false)
 
 onMounted(() => {
   document.body.classList.add('detail_body')
@@ -90,6 +141,36 @@ onMounted(() => {
 onUnmounted(() => {
   document.body.classList.remove('detail_body')
 })
+
+if (utilStore.id <= 0) {
+  utilStore.getFromCookieIdentification()
+}
+
+const handleDownloadImage = async () => {
+  load_loading.value = true
+  setTimeout(() => {
+    load_loading.value = false
+  }, 2500)
+}
+
+const handleDeleteImage = async () => {
+  load_loading.value = true
+  setTimeout(() => {
+    load_loading.value = false
+  }, 3000)
+  try {
+    const response = await axios.post('/delete/', {
+      original_image_id: utilStore.original_image_id
+    })
+    if(response.status === 200) {
+      utilStore.clearImages()
+    } else {
+      console.log(response.data.message)
+    }
+  } catch (e) {
+    console.error('Delete Error...', e)
+  }
+}
 
 </script>
 
@@ -102,25 +183,9 @@ onUnmounted(() => {
   color: #333;
 }
 
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background-color: #ffffff;
-  color: #000000;
-  padding: 10px 20px;
-  border: 0 solid black;
-  border-bottom-width: 1px;
-  z-index: 1000; /* 确保 navbar 在所有内容之前显示 */
-}
-
-.navbar .left {
-  display: flex;
-  align-items: center;
+.img {
+  width: 35px;
+  margin-bottom: 40px;
 }
 
 .navbar .left img {
@@ -137,15 +202,6 @@ onUnmounted(() => {
 .navbar .left a:hover {
   text-decoration: underline;
   color: #038cd6;
-}
-
-.navbar .right {
-  display: flex;
-  align-items: center;
-}
-
-.navbar .right .user-info {
-  margin-right: 20px;
 }
 
 .do_not_have_image {
@@ -168,12 +224,14 @@ onUnmounted(() => {
   align-items: center;
   flex-direction: column;
 }
+
 .image_detail {
   font-family: "JetBrains Mono ExtraBold", sans-serif;
+  color: black;
 }
 
 .have_image {
-  padding-top: 100px; /* 确保内容不会被 navbar 覆盖 */
+  padding-top: 100px;
 }
 
 .svg-container {
