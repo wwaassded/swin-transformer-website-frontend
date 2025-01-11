@@ -93,9 +93,6 @@ import axios from "axios";
 const overlay = ref(false)
 const utilStore = useUtilStore()
 const router = useRouter()
-if (utilStore.id <= 0) {
-  utilStore.getFromCookieIdentification()
-}
 
 onMounted(() => {
   document.body.classList.add('home_body')
@@ -115,7 +112,14 @@ const items = [
 
 const selectedFile = ref<File | null>(null)
 
-//TODO 接下来的工作 处理用户传递的图片
+utilStore.$subscribe((_mutate, state) => {
+  if(state.original_image_id >= 0) {
+    localStorage.setItem('original_image_id',`${state.original_image_id}`)
+    localStorage.setItem('original_image_url',state.original_image_url)
+    localStorage.setItem('segmented_image_url',state.segmented_image_url)
+  }
+})
+
 const fileHandle = async (file: File) => {
   if (!file.type.startsWith('image')) {
     selectedFile.value = null

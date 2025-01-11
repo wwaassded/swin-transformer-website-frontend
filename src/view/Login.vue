@@ -78,6 +78,13 @@ let passwordRules = [
   },
 ];
 
+utilStore.$subscribe((_mutate, state) => {
+  if(state.id >= 0) {
+    localStorage.setItem('id',`${state.id}`)
+    localStorage.setItem('username', state.username)
+  }
+})
+
 const handleSubmit = async () => {
   try {
     const response = await axios.post('/login/', {

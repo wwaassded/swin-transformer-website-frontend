@@ -142,10 +142,6 @@ onUnmounted(() => {
   document.body.classList.remove('detail_body')
 })
 
-if (utilStore.id <= 0) {
-  utilStore.getFromCookieIdentification()
-}
-
 const handleDownloadImage = async () => {
   load_loading.value = true
   setTimeout(() => {

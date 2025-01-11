@@ -5,11 +5,11 @@ import type {identificationObject} from "../type";
 const useUtilStore = defineStore('util', {
     state() {
         return {
-            id: -1,
-            username: '',
-            original_image_id: -1,
-            original_image_url: '',
-            segmented_image_url: '',
+            id: parseInt(localStorage.getItem('id') as string) || -1,
+            username: localStorage.getItem('username') || '',
+            original_image_id: parseInt(localStorage.getItem('original_image_id') as string) || -1,
+            original_image_url: localStorage.getItem('original_image_url') || '',
+            segmented_image_url: localStorage.getItem('segmented_image_url') || '',
         }
     },
     actions: {
@@ -22,25 +22,21 @@ const useUtilStore = defineStore('util', {
             this.id = user_info.id
             this.username = user_info.username
         },
-        //注销 清空原有的用户信息
         logout() {
             this.id = -1
             this.username = ''
+            this.clearImages()
+            localStorage.removeItem('id')
+            localStorage.removeItem('username')
         },
         clearImages() {
             this.original_image_id = -1
             this.original_image_url = ''
             this.segmented_image_url = ''
+            localStorage.removeItem('original_image_id')
+            localStorage.removeItem('original_image_url')
+            localStorage.removeItem('segmented_image_url')
         }
-    },
-    persist: { // 实现 session级别的pinia持久化 防止页面刷新时state中的变量恢复初始值
-        enabled: true,
-        strategies: [
-            {
-                key: 'utilStore',
-                storage: sessionStorage
-            }
-        ]
     },
 })
 
