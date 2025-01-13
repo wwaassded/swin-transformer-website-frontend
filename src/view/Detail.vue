@@ -1,5 +1,5 @@
 <template>
-  <!--  如果有详细信息的话就会展示-->
+  <!-- 如果有详细信息的话就会展示-->
   <div v-if="utilStore && utilStore.original_image_url && utilStore.segmented_image_url">
     <v-layout class="rounded rounded-md">
       <v-app-bar title="SwinTransformer" class="opacity-90">
@@ -47,11 +47,11 @@
 
       <v-main
           class="d-flex align-center justify-center"
-          style="min-height: 300px;background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);"
+          style="min-height: 300px; background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);"
       >
         <div class="have_image d-flex justify-center align-center">
           <v-sheet
-              class="d-flex align-center justify-center flex-wrap text-center mx-auto px-4"
+              class="image-container d-flex align-center justify-center flex-wrap text-center mx-auto px-4"
               elevation="10"
               height="500"
               max-width="850"
@@ -60,35 +60,68 @@
               style="background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);"
           >
             <div>
-              <div class="d-flex align-center justify-center" style="margin-bottom: 30px">
+              <div class="d-flex align-center justify-center mb-4">
+                <!-- 原始图片部分 -->
                 <div class="img_with_description mx-2">
                   <div class="d-flex justify-center mb-2">
                     <span class="image_detail">上传的原图片</span>
                   </div>
                   <div class="img_source">
                     <v-img
-                        :width="300"
-                        cover
                         :src="utilStore.original_image_url"
+                        height="300"
+                        width="300"
+                        object-fit="cover"
+                        class="uniform-image"
+                        @dblclick="focusOriginalImage = !focusOriginalImage"
                     ></v-img>
+                    <v-overlay v-model="focusOriginalImage"
+                               class="align-center justify-center"
+                    >
+                      <v-img
+                          :src="utilStore.original_image_url"
+                          height="700"
+                          width="700"
+                          object-fit="cover"
+                          class="uniform-image"
+                      ></v-img>
+                    </v-overlay>
                   </div>
                 </div>
+
+                <!-- 中间箭头图标 -->
                 <div class="mx-4 svg-container">
                   <svg class="svg-icon" viewBox="0 0 20 20">
                     <path fill="none"
                           d="M14.989,9.491L6.071,0.537C5.78,0.246,5.308,0.244,5.017,0.535c-0.294,0.29-0.294,0.763-0.003,1.054l8.394,8.428L5.014,18.41c-0.291,0.291-0.291,0.763,0,1.054c0.146,0.146,0.335,0.218,0.527,0.218c0.19,0,0.382-0.073,0.527-0.218l8.918-8.919C15.277,10.254,15.277,9.784,14.989,9.491z"></path>
                   </svg>
                 </div>
+
+                <!-- 分割后的图片部分 -->
                 <div class="img_with_description mx-2">
                   <div class="d-flex justify-center mb-2">
                     <span class="image_detail">分割后的图片</span>
                   </div>
                   <div class="img_segmented">
                     <v-img
-                        :width="300"
-                        cover
                         :src="utilStore.segmented_image_url"
+                        height="300"
+                        width="300"
+                        object-fit="cover"
+                        class="uniform-image"
+                        @dblclick="focusSegmentedImage = !focusSegmentedImage"
                     ></v-img>
+                    <v-overlay v-model="focusSegmentedImage"
+                               class="align-center justify-center"
+                    >
+                      <v-img
+                          :src="utilStore.segmented_image_url"
+                          height="700"
+                          width="700"
+                          object-fit="cover"
+                          class="uniform-image"
+                      ></v-img>
+                    </v-overlay>
                   </div>
                 </div>
               </div>
@@ -101,7 +134,7 @@
     </v-layout>
   </div>
 
-  <!--  如果没有可以显示的信息就基于用户一定的提示-->
+  <!-- 如果没有可以显示的信息就基于用户一定的提示-->
   <div v-else class="do_not_have_image">
     <v-sheet
         class="d-flex align-center justify-center flex-wrap text-center mx-auto px-4"
@@ -132,6 +165,12 @@ import axios from "axios";
 
 const utilStore = useUtilStore()
 const router = useRouter()
+let segmented_image_name = ref('')
+let focusOriginalImage = ref(false)
+let focusSegmentedImage = ref(false)
+if (utilStore.original_image_id > 0) {
+  segmented_image_name.value = utilStore.segmented_image_url.split('/').pop() as string
+}
 let load_loading = ref(false)
 
 onMounted(() => {
@@ -143,10 +182,22 @@ onUnmounted(() => {
 })
 
 const handleDownloadImage = async () => {
-  load_loading.value = true
-  setTimeout(() => {
-    load_loading.value = false
-  }, 2500)
+  load_loading.value = true;
+  try {
+    const url = `http://localhost:8000/download/${segmented_image_name.value}/`
+    console.log(url)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = segmented_image_name.value
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (e) {
+    console.error('下载图片出错: ', e);
+    alert('下载过程中发生错误');
+  } finally {
+    load_loading.value = false;
+  }
 }
 
 const handleDeleteImage = async () => {
@@ -158,7 +209,7 @@ const handleDeleteImage = async () => {
     const response = await axios.post('/delete/', {
       original_image_id: utilStore.original_image_id
     })
-    if(response.status === 200) {
+    if (response.status === 200) {
       utilStore.clearImages()
     } else {
       console.log(response.data.message)
