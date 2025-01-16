@@ -1,5 +1,4 @@
 <template>
-
   <div class="navbar">
     <div class="left">
       <img src="../assets/login.svg" alt="Logo">
@@ -86,8 +85,6 @@
         total-visible="6"
     ></v-pagination>
   </div>
-
-
 </template>
 
 <script setup lang="ts" name="Detail_list">
