@@ -15,6 +15,8 @@ function md5(raw: string) {
     return Md5.hashStr(raw)
 }
 
-export {parseCookies, md5}
+const lines_per_page = 4
+
+export {parseCookies, md5, lines_per_page}
 
 

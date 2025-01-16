@@ -4,13 +4,13 @@
       <img src="../assets/login.svg" alt="Logo">
       <a href="#">SwinTransformer</a>
       <router-link :to="{name: 'detail'}">最近一次结果</router-link>
-      <router-link :to="{name: 'detail'}">历史结果</router-link>
+      <router-link :to="{name: 'detail_list'}">历史结果</router-link>
     </div>
     <div class="right">
       <div class="user-info">
         <v-menu open-on-hover>
           <template v-slot:activator="{ props }">
-            <v-btn v-bind="props" variant="text">
+            <v-btn v-bind="props" variant="plain" :ripple="false">
               {{ fullUserName }}
             </v-btn>
           </template>
@@ -113,10 +113,10 @@ const items = [
 const selectedFile = ref<File | null>(null)
 
 utilStore.$subscribe((_mutate, state) => {
-  if(state.original_image_id >= 0) {
-    localStorage.setItem('original_image_id',`${state.original_image_id}`)
-    localStorage.setItem('original_image_url',state.original_image_url)
-    localStorage.setItem('segmented_image_url',state.segmented_image_url)
+  if (state.original_image_id >= 0) {
+    localStorage.setItem('original_image_id', `${state.original_image_id}`)
+    localStorage.setItem('original_image_url', state.original_image_url)
+    localStorage.setItem('segmented_image_url', state.segmented_image_url)
   }
 })
 

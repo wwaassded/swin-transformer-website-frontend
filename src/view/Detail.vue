@@ -5,7 +5,7 @@
       <v-app-bar title="SwinTransformer" class="opacity-90">
         <v-toolbar-items>
           <v-btn variant="plain" :ripple="false" @click="router.replace({ name: 'detail' })">最近一次结果</v-btn>
-          <v-btn variant="plain" :ripple="false" @click="router.replace({ name: 'detail' })">历史结果</v-btn>
+          <v-btn variant="plain" :ripple="false" @click="router.replace({ name: 'detail_list' })">历史结果</v-btn>
         </v-toolbar-items>
         <v-divider class="mx-4" vertical></v-divider>
         <v-btn :ripple="false" variant="plain">
@@ -125,7 +125,9 @@
                   </div>
                 </div>
               </div>
-              <v-btn color="black" variant="outlined" style="margin-top: 10px" @click="router.back()">上传图片去😁
+              <v-btn color="black" variant="outlined" style="margin-top: 10px" @click="router.push({
+              name: 'home'
+              })">上传图片去😁
               </v-btn>
             </div>
           </v-sheet>
@@ -150,7 +152,10 @@
         <div class="text-h6 font-weight-medium mb-2" style="margin-top: 20px">
           这里只会展示近期的分割情况，如果想要显示所有的结果可以点击主页面的历史结果按钮查看
         </div>
-        <v-btn color="orange" variant="outlined" style="margin-top: 20px" @click="router.back()">上传图片去😎</v-btn>
+        <v-btn color="orange" variant="outlined" style="margin-top: 20px" @click="router.push({
+        name: 'home'
+        })">上传图片去😎
+        </v-btn>
       </div>
     </v-sheet>
   </div>

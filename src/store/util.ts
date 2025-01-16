@@ -10,6 +10,7 @@ const useUtilStore = defineStore('util', {
             original_image_id: parseInt(localStorage.getItem('original_image_id') as string) || -1,
             original_image_url: localStorage.getItem('original_image_url') || '',
             segmented_image_url: localStorage.getItem('segmented_image_url') || '',
+            page_number: parseInt(localStorage.getItem('page_number') as string) || 1,
         }
     },
     actions: {
@@ -25,9 +26,11 @@ const useUtilStore = defineStore('util', {
         logout() {
             this.id = -1
             this.username = ''
+            this.page_number = 1
             this.clearImages()
             localStorage.removeItem('id')
             localStorage.removeItem('username')
+            localStorage.removeItem('page_number')
         },
         clearImages() {
             this.original_image_id = -1

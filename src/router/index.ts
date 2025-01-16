@@ -3,12 +3,14 @@ import Login from "../view/Login.vue"
 import Home from "../view/Home.vue"
 import Logup from "../view/Logup.vue";
 import Detail from "../view/Detail.vue";
+import Detail_list from "../view/Detail_list.vue";
 
 const routes = [
     {path: '/', component: Home, name: 'home'},
     {path: '/login', component: Login, name: 'login'},
     {path: '/logup', component: Logup, name: 'logup'},
-    {path: '/detail', component: Detail, name: 'detail'}
+    {path: '/detail', component: Detail, name: 'detail'},
+    {path: '/detail_list', component: Detail_list, name: 'detail_list'}
 ]
 
 const router = createRouter({
@@ -23,7 +25,7 @@ router.beforeEach((to, from, next) => {
             next('/');
         } else {
             if (to.path === '/detail') {
-                if(from.path !== '/') {
+                if (from.path !== '/' && from.path !== '/detail_list') {
                     next('/')
                 } else {
                     next()
