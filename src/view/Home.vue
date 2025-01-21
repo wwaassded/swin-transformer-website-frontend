@@ -127,7 +127,6 @@ const fileHandle = async (file: File) => {
   } else {
     const fileData = new FormData()
     fileData.append('picture', file)
-    fileData.append('user_id', `${utilStore.id}`)
     try {
       const response = await axios.post('/upload/', fileData, {
         headers: {

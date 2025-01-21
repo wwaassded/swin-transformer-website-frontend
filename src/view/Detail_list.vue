@@ -57,20 +57,26 @@
         </v-col>
         <v-col cols="1">
           <v-btn
+              :disabled="download_load_loading"
+              :loading="download_load_loading"
               block size="x-large"
               style=" height: 100%"
               color="#EF5350"
               elevation="10"
+              @click="handleDownloadImage(segmented_images_list[n-1])"
           >
             下载
           </v-btn>
         </v-col>
         <v-col cols="1">
           <v-btn
+              :disabled="delete_load_loading"
+              :loading="delete_load_loading"
               block size="x-large"
               style=" height: 100%"
               color="#1976D2"
               elevation="10"
+              @click="handleDeleteImage(original_id_list[n-1])"
           >
             删除
           </v-btn>
@@ -93,12 +99,16 @@ import {lines_per_page} from "../utils";
 import useUtilStore from "../store/util.ts";
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import axios from "axios";
+import router from "../router";
 
 const utilStore = useUtilStore()
 const currentPage = ref(0)
-let currentLen = ref(5)
+let currentLen = ref(7)
+let original_id_list = ref([])
 let original_images_list = ref([])
 let segmented_images_list = ref([])
+let download_load_loading = ref(false)
+let delete_load_loading = ref(false)
 
 const fullUserName = computed(() => {
   return utilStore.username + '#' + utilStore.id
@@ -130,6 +140,7 @@ const handleGetImagesByPage = async (page: number) => {
     if (response.status === 200) {
       const response_data = response.data
       if (response_data.isSuccessful) {
+        original_id_list.value = response_data.original_id_list
         original_images_list.value = response_data.original_images_list
         segmented_images_list.value = response_data.segmented_images_list
       } else {
@@ -142,6 +153,46 @@ const handleGetImagesByPage = async (page: number) => {
     }
   } catch (e) {
     console.error('can not reach server:... ', e)
+  }
+}
+
+const handleDownloadImage = async (image_url: string) => {
+  download_load_loading.value = true
+  try {
+    const image_name: string = image_url.split('/').pop() as string || ''
+    const url = `http://localhost:8000/download/${image_name}/`
+    console.log(url)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = image_name
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (e) {
+    console.error('下载图片出错: ', e)
+    alert('下载过程中发生错误')
+  } finally {
+    download_load_loading.value = false
+  }
+}
+
+const handleDeleteImage = async (original_image_id: number) => {
+  delete_load_loading.value = true
+  try {
+    const response = await axios.post('/delete/', {
+      original_image_id: original_image_id,
+      image_page_number: currentPage.value,
+    })
+    if (response.status === 200) {
+      await router.replace({name: 'detail_list'})
+    } else {
+      console.log(response.data.message)
+    }
+  } catch (e) {
+    console.error('删除图片出错: ', e)
+    alert('删除过程中发生错误')
+  } finally {
+    delete_load_loading.value = false
   }
 }
 

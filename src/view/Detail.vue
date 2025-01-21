@@ -212,7 +212,8 @@ const handleDeleteImage = async () => {
   }, 3000)
   try {
     const response = await axios.post('/delete/', {
-      original_image_id: utilStore.original_image_id
+      original_image_id: utilStore.original_image_id,
+      image_page_number: -1,
     })
     if (response.status === 200) {
       utilStore.clearImages()
