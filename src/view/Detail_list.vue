@@ -99,11 +99,10 @@ import {lines_per_page} from "../utils";
 import useUtilStore from "../store/util.ts";
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import axios from "axios";
-import router from "../router";
 
 const utilStore = useUtilStore()
 const currentPage = ref(0)
-let currentLen = ref(7)
+let currentLen = ref(0)
 let original_id_list = ref([])
 let original_images_list = ref([])
 let segmented_images_list = ref([])
@@ -116,14 +115,23 @@ const fullUserName = computed(() => {
 
 // 监视page页数的变化
 watch(currentPage, (page) => {
-  if (page >= currentLen.value) {
-    currentLen.value = page + 1
-  }
   handleGetImagesByPage(page)
 })
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    const response = await axios.post('/getPageNumber/')
+    if (response.status === 200) {
+      currentLen.value = response.data.page_number
+    } else {
+      alert('error in server')
+    }
+  } catch (e) {
+    console.error(e)
+    alert('error in server')
+  }
   currentPage.value = utilStore.page_number
+  await handleGetImagesByPage(currentPage.value)
   document.body.classList.add('detail_list_body')
 })
 
@@ -145,6 +153,7 @@ const handleGetImagesByPage = async (page: number) => {
         segmented_images_list.value = response_data.segmented_images_list
       } else {
         //TODO 没有获取到数据 应该给予用户一定的提示
+        currentPage.value = currentLen.value
         alert('wrong in server')
       }
     } else {
@@ -176,6 +185,7 @@ const handleDownloadImage = async (image_url: string) => {
   }
 }
 
+//FIXME: 如果删除的是 最近结果展示的图片 应该将pinia中存储的数据进行清理 以避免页面之间展示的不一致性
 const handleDeleteImage = async (original_image_id: number) => {
   delete_load_loading.value = true
   try {
@@ -184,7 +194,14 @@ const handleDeleteImage = async (original_image_id: number) => {
       image_page_number: currentPage.value,
     })
     if (response.status === 200) {
-      await router.replace({name: 'detail_list'})
+      if (utilStore.original_image_id === original_image_id) {
+        utilStore.clearImages()
+      }
+      currentLen.value = response.data.page_number
+      if (currentPage.value >= currentLen.value) {
+        currentPage.value = currentLen.value
+      }
+      await handleGetImagesByPage(currentPage.value)
     } else {
       console.log(response.data.message)
     }
