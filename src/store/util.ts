@@ -2,6 +2,8 @@ import {defineStore} from "pinia";
 import {parseCookies} from "../utils";
 import type {identificationObject} from "../type";
 
+//TODO 有的时候用户登录后会看到前一个登录用户留下的信息
+
 const useUtilStore = defineStore('util', {
     state() {
         return {
