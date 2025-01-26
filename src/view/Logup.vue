@@ -23,6 +23,15 @@
             ></v-text-field>
           </div>
           <div class="form-group">
+            <v-text-field
+                label="Email"
+                type="email"
+                hint="请输入您想要使用的邮箱"
+                v-model="email"
+                :rules="emailRules"
+            ></v-text-field>
+          </div>
+          <div class="form-group">
             <v-btn type="submit" size="large" block>注册</v-btn>
           </div>
           <div v-if="feedbackMessage" class="form-group" id="feedback">
@@ -55,6 +64,7 @@ onUnmounted(() => {
 
 let userName = ref('')
 let password = ref('')
+let email = ref('')
 let feedbackMessage = ref('')
 
 let nameRules = [
@@ -75,7 +85,15 @@ let passwordRules = [
     if (!/[!^$.&*@:#,?%|"()<>{}]/.test(val)) return '密码至少包括一个特殊字符'
     return true
   },
-];
+]
+
+let emailRules = [
+  (email: string) => {
+    const re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!re.test(String(email).toLowerCase())) return '邮箱地址格式不规范'
+    return true
+  }
+]
 
 const handleLogup = async () => {
   try {
