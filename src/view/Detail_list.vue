@@ -18,7 +18,30 @@
       </div>
     </div>
   </div>
-
+  <v-card
+      class="mx-auto"
+      color="surface-light"
+      max-width="800"
+      style="margin-top: 100px"
+  >
+    <v-card-text>
+      <v-text-field
+          :loading="loading"
+          prepend-inner-icon="mdi-magnify"
+          append-inner-icon="mdi-delete"
+          density="compact"
+          label="Search Image"
+          variant="solo"
+          hide-details
+          single-line
+          :readonly="searching"
+          @click:prepend-inner="searchClick(searching_token)"
+          @click:append-inner="quitSearchClick"
+          v-model="searching_token"
+          class="custom-height"
+      ></v-text-field>
+    </v-card-text>
+  </v-card>
   <div class="main">
     <v-container>
       <v-row
@@ -108,6 +131,9 @@ let original_images_list = ref([])
 let segmented_images_list = ref([])
 let download_load_loading = ref(false)
 let delete_load_loading = ref(false)
+let searching_token = ref('')
+let loading = ref(false)
+let searching = ref(false)
 
 const fullUserName = computed(() => {
   return utilStore.username + '#' + utilStore.id
@@ -140,6 +166,22 @@ onUnmounted(() => {
   localStorage.setItem('page_number', `${utilStore.page_number}`)
   document.body.classList.remove('detail_list_body')
 })
+
+/**
+ * TODO 点击过后进入到 搜索模式 所有获取图片的行为 都会被认为是通过token来进行
+ */
+const searchClick = async (_token: string) => {
+  loading.value = true
+  searching.value = true
+  setTimeout(() => {
+    loading.value = false
+  }, 2000)
+}
+
+const quitSearchClick = async () => {
+  searching.value = false
+  searching_token.value = ""
+}
 
 const handleGetImagesByPage = async (page: number) => {
   try {
@@ -223,6 +265,10 @@ const handleDeleteImage = async (original_image_id: number) => {
   padding: 0;
   background-color: #ffffff;
   color: #333;
+}
+
+.custom-height {
+  height: 60px;
 }
 
 .navbar {
