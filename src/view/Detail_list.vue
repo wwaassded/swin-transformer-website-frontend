@@ -200,8 +200,29 @@ const quitSearchClick = async () => {
 
 //TODO next station
 const handleGetImagesByTokenAndPage = async (token: string, page: number) => {
-  console.log(token)
-  console.log(page)
+  try {
+    const response = await axios.post('/searchImage/', {
+      search_token: token,
+      page_number: page,
+    })
+    if (response.status === 200) {
+      const response_data = response.data
+      if (response_data.isSuccessful) {
+        original_id_list.value = response_data.original_id_list
+        original_images_list.value = response_data.original_images_list
+        segmented_images_list.value = response_data.segmented_images_list
+        currentLen.value = response_data.page_number
+      } else {
+        if (response_data.isEmpty) {
+          alert('there is no data in server right now')
+        }
+      }
+    } else {
+      alert('wrong in server')
+    }
+  } catch (e) {
+    console.error(e, 'wrong in server')
+  }
 }
 
 const handleGetImagesByPage = async (page: number) => {
