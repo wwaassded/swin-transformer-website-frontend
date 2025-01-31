@@ -35,7 +35,7 @@
           hide-details
           single-line
           :readonly="searching"
-          @click:prepend-inner="searchClick(searching_token)"
+          @click:prepend-inner="searchClick"
           @click:append-inner="quitSearchClick"
           v-model="searching_token"
           class="custom-height"
@@ -133,7 +133,7 @@ let download_load_loading = ref(false)
 let delete_load_loading = ref(false)
 let searching_token = ref('')
 let loading = ref(false)
-let searching = ref(false)
+let searching = ref(false) //页面是否正处于搜索的阶段
 
 const fullUserName = computed(() => {
   return utilStore.username + '#' + utilStore.id
@@ -141,7 +141,11 @@ const fullUserName = computed(() => {
 
 // 监视page页数的变化
 watch(currentPage, (page) => {
-  handleGetImagesByPage(page)
+  if (searching.value) {
+    handleGetImagesByTokenAndPage(searching_token.value, page)
+  } else {
+    handleGetImagesByPage(page)
+  }
 })
 
 onMounted(async () => {
@@ -157,7 +161,8 @@ onMounted(async () => {
     alert('error in server')
   }
   currentPage.value = utilStore.page_number
-  await handleGetImagesByPage(currentPage.value)
+  //? currentPage的初始值为0 而page_number不可能为零 所以watch必定会触发一次
+  // await handleGetImagesByPage(currentPage.value)
   document.body.classList.add('detail_list_body')
 })
 
@@ -170,9 +175,14 @@ onUnmounted(() => {
 /**
  * TODO 点击过后进入到 搜索模式 所有获取图片的行为 都会被认为是通过token来进行
  */
-const searchClick = async (_token: string) => {
+const searchClick = async () => {
   loading.value = true
   searching.value = true
+  if (currentPage.value === 1) {
+    await handleGetImagesByTokenAndPage(searching_token.value, currentPage.value)
+  } else {
+    currentPage.value = 1
+  }
   setTimeout(() => {
     loading.value = false
   }, 2000)
@@ -181,6 +191,17 @@ const searchClick = async (_token: string) => {
 const quitSearchClick = async () => {
   searching.value = false
   searching_token.value = ""
+  if (currentPage.value === 1) {
+    await handleGetImagesByPage(1)
+  } else {
+    currentPage.value = 1
+  }
+}
+
+//TODO next station
+const handleGetImagesByTokenAndPage = async (token: string, page: number) => {
+  console.log(token)
+  console.log(page)
 }
 
 const handleGetImagesByPage = async (page: number) => {
