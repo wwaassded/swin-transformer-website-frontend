@@ -198,7 +198,6 @@ const quitSearchClick = async () => {
   }
 }
 
-//TODO next station
 const handleGetImagesByTokenAndPage = async (token: string, page: number) => {
   try {
     const response = await axios.post('/searchImage/', {
@@ -235,6 +234,7 @@ const handleGetImagesByPage = async (page: number) => {
         original_id_list.value = response_data.original_id_list
         original_images_list.value = response_data.original_images_list
         segmented_images_list.value = response_data.segmented_images_list
+        currentLen.value = response_data.page_length
       } else {
         //TODO 没有获取到数据 应该给予用户一定的提示
         currentPage.value = currentLen.value
