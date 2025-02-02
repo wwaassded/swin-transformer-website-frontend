@@ -18,7 +18,30 @@
       </div>
     </div>
   </div>
-
+  <v-card
+      class="mx-auto"
+      color="surface-light"
+      max-width="800"
+      style="margin-top: 100px"
+  >
+    <v-card-text>
+      <v-text-field
+          :loading="loading"
+          prepend-inner-icon="mdi-magnify"
+          append-inner-icon="mdi-delete"
+          density="compact"
+          label="Search Image"
+          variant="solo"
+          hide-details
+          single-line
+          :readonly="searching"
+          @click:prepend-inner="searchClick"
+          @click:append-inner="quitSearchClick"
+          v-model="searching_token"
+          class="custom-height"
+      ></v-text-field>
+    </v-card-text>
+  </v-card>
   <div class="main">
     <v-container>
       <v-row
@@ -108,6 +131,9 @@ let original_images_list = ref([])
 let segmented_images_list = ref([])
 let download_load_loading = ref(false)
 let delete_load_loading = ref(false)
+let searching_token = ref('')
+let loading = ref(false)
+let searching = ref(false) //页面是否正处于搜索的阶段
 
 const fullUserName = computed(() => {
   return utilStore.username + '#' + utilStore.id
@@ -115,7 +141,11 @@ const fullUserName = computed(() => {
 
 // 监视page页数的变化
 watch(currentPage, (page) => {
-  handleGetImagesByPage(page)
+  if (searching.value) {
+    handleGetImagesByTokenAndPage(searching_token.value, page)
+  } else {
+    handleGetImagesByPage(page)
+  }
 })
 
 onMounted(async () => {
@@ -131,7 +161,8 @@ onMounted(async () => {
     alert('error in server')
   }
   currentPage.value = utilStore.page_number
-  await handleGetImagesByPage(currentPage.value)
+  //? currentPage的初始值为0 而page_number不可能为零 所以watch必定会触发一次
+  // await handleGetImagesByPage(currentPage.value)
   document.body.classList.add('detail_list_body')
 })
 
@@ -140,6 +171,58 @@ onUnmounted(() => {
   localStorage.setItem('page_number', `${utilStore.page_number}`)
   document.body.classList.remove('detail_list_body')
 })
+
+/**
+ * TODO 点击过后进入到 搜索模式 所有获取图片的行为 都会被认为是通过token来进行
+ */
+const searchClick = async () => {
+  loading.value = true
+  searching.value = true
+  if (currentPage.value === 1) {
+    await handleGetImagesByTokenAndPage(searching_token.value, currentPage.value)
+  } else {
+    currentPage.value = 1
+  }
+  setTimeout(() => {
+    loading.value = false
+  }, 2000)
+}
+
+const quitSearchClick = async () => {
+  searching.value = false
+  searching_token.value = ""
+  if (currentPage.value === 1) {
+    await handleGetImagesByPage(1)
+  } else {
+    currentPage.value = 1
+  }
+}
+
+const handleGetImagesByTokenAndPage = async (token: string, page: number) => {
+  try {
+    const response = await axios.post('/searchImage/', {
+      search_token: token,
+      page_number: page,
+    })
+    if (response.status === 200) {
+      const response_data = response.data
+      if (response_data.isSuccessful) {
+        original_id_list.value = response_data.original_id_list
+        original_images_list.value = response_data.original_images_list
+        segmented_images_list.value = response_data.segmented_images_list
+        currentLen.value = response_data.page_number
+      } else {
+        if (response_data.isEmpty) {
+          alert('there is no data in server right now')
+        }
+      }
+    } else {
+      alert('wrong in server')
+    }
+  } catch (e) {
+    console.error(e, 'wrong in server')
+  }
+}
 
 const handleGetImagesByPage = async (page: number) => {
   try {
@@ -151,6 +234,7 @@ const handleGetImagesByPage = async (page: number) => {
         original_id_list.value = response_data.original_id_list
         original_images_list.value = response_data.original_images_list
         segmented_images_list.value = response_data.segmented_images_list
+        currentLen.value = response_data.page_length
       } else {
         //TODO 没有获取到数据 应该给予用户一定的提示
         currentPage.value = currentLen.value
@@ -223,6 +307,10 @@ const handleDeleteImage = async (original_image_id: number) => {
   padding: 0;
   background-color: #ffffff;
   color: #333;
+}
+
+.custom-height {
+  height: 60px;
 }
 
 .navbar {
