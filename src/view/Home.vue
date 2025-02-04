@@ -88,11 +88,13 @@
 import useUtilStore from "../store/util.ts" //使用 pinia 实现全局的数据共享
 import {ref, computed, onMounted, onUnmounted} from "vue"
 import {useRouter} from "vue-router";
+import {useWebSocketStore} from "../store/websocket.ts";
 import axios from "axios";
 
 const overlay = ref(false)
 const utilStore = useUtilStore()
 const router = useRouter()
+const webSocketStore = useWebSocketStore()
 
 onMounted(() => {
   document.body.classList.add('home_body')
@@ -135,15 +137,19 @@ const fileHandle = async (file: File) => {
       })
       let response_data = response.data
       if (response_data.isSuccessful) {
-        let {source_image_id, source_image_url, segmented_image_url, message} = response_data
+        // let {source_image_id, source_image_url, segmented_image_url, message} = response_data
         overlay.value = false // 处理流程已经结束
-        utilStore.original_image_id = source_image_id
-        utilStore.segmented_image_url = segmented_image_url
-        utilStore.original_image_url = source_image_url
-        console.log(message)
-        await router.push({
-          name: 'detail'
-        })
+        const task_id = response_data.task_id
+        if (webSocketStore.status === 'disconnected') {
+          webSocketStore.connect(task_id)
+        }
+        // utilStore.original_image_id = source_image_id
+        // utilStore.segmented_image_url = segmented_image_url
+        // utilStore.original_image_url = source_image_url
+        // console.log(message)
+        // await router.push({
+        //   name: 'detail'
+        // })
       } else {
         let {message} = response_data
         console.log(message)
